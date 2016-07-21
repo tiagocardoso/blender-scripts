@@ -1,2 +1,2 @@
-# blender-lod-script
-testing LOD import export script for Blender
+# blender-scripts
+testing LOD, import, export and render script for Blender
