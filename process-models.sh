@@ -10,19 +10,18 @@ do
   output_dir=output/${file%.*}
   echo processing: $file
 
-  blender -b -F PNG -P scripts/render.py -- $file_path $output_dir/render 960 540
-  echo render to png: $output_dir/render.png
-
-  blender -b -P scripts/convert.py -- $file_path $output_dir/conversion.gltf
-  collada2gltf -f $output_dir/conversion.dae -e -o $output_dir/conversion.gltf
-  #rm $output_dir/conversion.dae
-
-  lods=( 50 25 15 7 3) #percentage
+  lods=( "33" "11" "3") #percentage
+  operators="import convert render"
   for lod in "${lods[@]}"
   do
-    echo "rendering LOD of $lod"
-    blender -b -P scripts/lod.py -- $file_path $output_dir/conversion-${lod}.dae $lod
-    blender -b -F PNG -P scripts/render.py -- $output_dir/conversion-${lod}.dae $output_dir/render-${lod} 960 540
-    collada2gltf -f $output_dir/conversion-${lod}.dae -o $output_dir/conversion-${lod}.gltf -e
+    operators+=" lod convert render"
   done
+  blender -b -P scripts/pipeline.py -- -input $file_path -outdir $output_dir -operators $operators -lods ${lods[*]// / } -width 960 -height 600
+
+  collada2gltf -f $output_dir/conversion-100.dae -o $output_dir/conversion-100.gltf -e -c Open3DGC -m binary
+  for lod in "${lods[@]}"
+  do
+    collada2gltf -f $output_dir/conversion-$lod.dae -o $output_dir/conversion-$lod.gltf -e -c Open3DGC -m binary
+  done
+
 done
