@@ -40,8 +40,11 @@ base_path = os.path.dirname(os.path.abspath(__file__)) + "/pipeline/"
 base_lod = current_lod = calculated_lod = 100
 for operator in args.operators:
     print("Running: " + operator)
+    # turn all elements of the lods list into integers
+    args.lods = [int(lod) for lod in args.lods]
     if operator == "lod" and args.lods and len(args.lods):
-        current_lod = int(args.lods.pop(0))
+        # get the biggest lod value from the lods list
+        current_lod = int(args.lods.pop(args.lods.index(max(args.lods))))
         calculated_lod = int((current_lod / base_lod) * 100)
         base_lod = current_lod
     if operator == "render" and args.coords and len(args.coords):
