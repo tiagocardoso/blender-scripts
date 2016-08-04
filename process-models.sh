@@ -11,7 +11,7 @@ do
   output_dir=output/${file%.*}
   echo processing: $file
 
-  lods=( "33" "11" "3") #percentage
+  lods=( "10" "5" "1") #percentage
   operators="import render convert "
   for lod in "${lods[@]}"
   do

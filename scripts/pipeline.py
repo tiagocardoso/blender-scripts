@@ -37,11 +37,13 @@ if args.operators == None:
     sys.exit()
 
 base_path = os.path.dirname(os.path.abspath(__file__)) + "/pipeline/"
-lod = 100
+base_lod = current_lod = calculated_lod = 100
 for operator in args.operators:
     print("Running: " + operator)
     if operator == "lod" and args.lods and len(args.lods):
-        lod = int(args.lods.pop(0))
+        current_lod = int(args.lods.pop(0))
+        calculated_lod = int((current_lod / base_lod) * 100)
+        base_lod = current_lod
     if operator == "render" and args.coords and len(args.coords):
         coords = args.coords.pop()
     filename = base_path + operator + ".py"
