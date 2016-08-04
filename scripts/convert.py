@@ -9,7 +9,7 @@ bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete()
 
 # get the arguments after --
-render_args = sys.argv[sys.argv.index("--")+1:]
+render_args = sys.argv[sys.argv.index("--") + 1:]
 
 if len(render_args) != 2:
     sys.exit("Must provide <input file> <output file>")
@@ -35,8 +35,8 @@ elif ext == 'obj':
         filepath=infile,
         use_smooth_groups=False,
         use_image_search=False,
-        axis_forward="Y",
-        axis_up="Z")
+        axis_forward="-Z",
+        axis_up="Y")
 
 elif ext == 'dae':
     print("Importing COLLADA")
@@ -86,8 +86,8 @@ elif out_ext == 'gltf':
     }
     # Copy properties to settings
     settings = blendergltf.default_settings.copy()
-    #settings['materials_export_shader'] = BoolProperty(name='Export Shaders', default=False)
-    #settings['images_embed_data'] = BoolProperty(name='Embed Image Data', default=False)
+    # settings['materials_export_shader'] = BoolProperty(name='Export Shaders', default=False)
+    # settings['images_embed_data'] = BoolProperty(name='Embed Image Data', default=False)
 
     gltf = blendergltf.export_gltf(scene, settings)
     with open(outfile, 'w') as fout:
