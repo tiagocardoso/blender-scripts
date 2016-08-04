@@ -2,7 +2,6 @@ import bpy, json, os, sys
 from copy import copy
 from math import pi, cos, sin, degrees
 from mathutils import Vector
-from blendergltf import blendergltf
 import argparse
 
 
@@ -42,7 +41,7 @@ lod = 100
 for operator in args.operators:
     print("Running: " + operator)
     if operator == "lod" and args.lods and len(args.lods):
-        lod = int(args.lods.pop())
+        lod = int(args.lods.pop(0))
     if operator == "render" and args.coords and len(args.coords):
         coords = args.coords.pop()
     filename = base_path + operator + ".py"
