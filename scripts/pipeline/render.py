@@ -131,3 +131,7 @@ print("Camera(%f, %f, %f)" % (camera_ob.location.x, camera_ob.location.y, camera
 scene.render.filepath = outfile
 
 bpy.ops.render.render(write_still=True)
+
+# clean up camera afterwards
+bpy.data.objects['Camera'].select = True
+bpy.ops.object.delete()
