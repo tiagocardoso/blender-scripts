@@ -1,4 +1,5 @@
 import bpy, json, os, sys
+from bpy import context
 from copy import copy
 from math import pi, cos, sin, degrees
 from mathutils import Vector
