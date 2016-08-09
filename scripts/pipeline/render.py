@@ -1,4 +1,4 @@
-outfile = args.outdir + "/render-" + str(base_lod) + "-" + str(coords[0]) + "-" + str(coords[1]) + ".png"
+outfile = args.outdir + '/render-' + str(base_lod) + '-' + str(coords[0]) + '-' + str(coords[1]) + '.png'
 width = args.width
 height = args.height
 meshes = [obj for obj in bpy.data.objects if obj.type == 'MESH']
@@ -37,7 +37,7 @@ camera = camera_ob.data
 # the clip end needs to be distance from the camera position to the minimum point of the mesh cluster
 # added 1% to avoid losing points due to floating point errors
 camera.clip_end = (Vector(mc_min) - Vector(cam_location)).length * 1.01
-camera.type = "ORTHO"
+camera.type = 'ORTHO'
 
 # set the camera target and constraints
 bpy.ops.object.add(type='EMPTY', location=cam_look_at)
@@ -59,6 +59,15 @@ scene.render.resolution_y = int(height)
 scene.render.resolution_percentage = 100
 scene.render.alpha_mode = 'TRANSPARENT'
 bpy.context.scene.render.image_settings.color_mode = 'RGBA'
+print("""World settings:
+- Ambient color: %s
+- Horizon color: %s
+- Zenith color: %s
+- Exposure: %d""" % (
+    scene.world.ambient_color,
+    scene.world.horizon_color,
+    scene.world.zenith_color,
+    scene.world.exposure))
 
 # set lighting
 scene.world.light_settings.use_environment_light = True
@@ -67,6 +76,25 @@ scene.world.light_settings.use_ambient_occlusion = True
 scene.world.light_settings.sample_method = 'CONSTANT_JITTERED'
 scene.world.light_settings.samples = 10
 scene.world.light_settings.bias = .5
+print("""Environment Lighting settings:
+- Color: %s
+- Energy: %f
+- Use ambient occlusion: %s
+- Ambient occlusion factor: %f
+- Ambient occlusion blend: %s
+- Gather method: %s
+- Sample method: %s
+- Samples: %f
+- Bias: %f""" % (
+    scene.world.light_settings.environment_color,
+    scene.world.light_settings.environment_energy,
+    scene.world.light_settings.use_ambient_occlusion,
+    scene.world.light_settings.ao_factor,
+    scene.world.light_settings.ao_blend_type,
+    scene.world.light_settings.gather_method,
+    scene.world.light_settings.sample_method,
+    scene.world.light_settings.samples,
+    scene.world.light_settings.bias))
 
 # select only the meshes in the scene
 for obj in scene.objects:
