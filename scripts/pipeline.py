@@ -1,7 +1,8 @@
-import bpy, json, os, sys
+import bpy, json, os, sys, time
 from bpy import context
+from bpy_extras.object_utils import world_to_camera_view
 from copy import copy
-from math import pi, cos, sin, degrees
+from math import pi, cos, sin, degrees, radians
 from mathutils import Vector
 import argparse
 

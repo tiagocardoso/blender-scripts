@@ -3,7 +3,7 @@ width = args.width
 height = args.height
 meshes = [obj for obj in bpy.data.objects if obj.type == 'MESH']
 
-# find the min and max coordinate values of the mesh cluster (set of all mesh objects)
+# min and max coordinate values of the mesh cluster (set of all mesh objects)
 mc_min = [None, None, None]
 mc_max = [None, None, None]
 for mesh in meshes:
@@ -20,15 +20,24 @@ for mesh in meshes:
                 if mc_max[i] < num:
                     mc_max[i] = num
 
-# find the dimensions of the mesh cluster
+# dimensions of the mesh cluster
 mc_d = [abs(mc_min[0] - mc_max[0]), abs(mc_min[1] - mc_max[1]), abs(mc_min[2] - mc_max[2])]
 
-# camera should be located one "cluster size unit" away from the mc_max point (positive direction of the three axes)
-# ex: mc_max=(1,2,3) & mc_d=(4,2,3) => cam_location=(5,4,6)
-cam_location = [mc_max[0] + mc_d[0], mc_max[1] + mc_d[1], mc_max[2] + mc_d[2]]
+# coordinates of the center of the mesh cluster
+mc_c = [mc_min[0] + (mc_d[0] * 0.5), mc_min[1] + (mc_d[1] * 0.5), mc_min[2] + (mc_d[2] * 0.5)]
+
+# position of the camera in cartesian coords from spherical coords
+radial = (Vector(mc_max) - Vector(mc_min)).length
+azimuth = radians(coords[0])
+zenith = radians(coords[1])
+cam_location = [
+    mc_c[0] + radial * cos(azimuth) * sin(zenith),
+    mc_c[1] + radial * sin(azimuth) * sin(zenith),
+    mc_c[2] + radial * cos(zenith)
+]
 
 # camera should look at the center point of the cluster
-cam_look_at = [(mc_d[0] / 2) + mc_min[0], (mc_d[1] / 2) + mc_min[1], (mc_d[2] / 2) + mc_min[2]]
+cam_look_at = mc_c
 
 # set the orthographic camera
 bpy.ops.object.camera_add(view_align=False, enter_editmode=False, location=cam_location)
@@ -96,24 +105,49 @@ print("""Environment Lighting settings:
     scene.world.light_settings.samples,
     scene.world.light_settings.bias))
 
-# select only the meshes in the scene
-for obj in scene.objects:
-    obj.select = obj.type == 'MESH'
+# mesh cluster bounding box points, that should be in the camera's field of view
+mc_bb_points = [
+    mc_min,
+    [mc_max[0], mc_min[1], mc_min[2]],
+    [mc_min[0], mc_max[1], mc_min[2]],
+    [mc_min[0], mc_min[1], mc_max[2]],
+    [mc_min[0], mc_max[1], mc_max[2]],
+    [mc_max[0], mc_min[1], mc_max[2]],
+    [mc_max[0], mc_max[1], mc_min[2]],
+    mc_max
+]
 
-# camera_to_view_selected fits all selected meshes in the camera view
-bpy.ops.view3d.camera_to_view_selected()
+# for point in mc_bb_points:
+#     bpy.ops.mesh.primitive_uv_sphere_add(size=(max(mc_d) * 0.02), location=point)
 
-# reset camera position since camera_to_view_selected changes it, possibly causing undesired clipping
-scene.camera.location = cam_location
-
-# adjust the ortho_scale set by camera_to_view_selected to have a 10% border
-camera.ortho_scale *= 1.1
+# from an orthographic scale of 1, project the bounding box points to 2d
+# the axis with the biggest range defines the new scale value, so that all points fit in the view
+camera.ortho_scale = 1
+bpy.context.scene.update()
+min_x = None
+max_x = None
+min_y = None
+max_y = None
+for point in mc_bb_points:
+    projected_point = world_to_camera_view(scene, camera_ob, Vector(point))
+    if min_x is None or projected_point.x < min_x:
+        min_x = projected_point.x
+    if max_x is None or projected_point.x > max_x:
+        max_x = projected_point.x
+    if min_y is None or projected_point.y < min_y:
+        min_y = projected_point.y
+    if max_y is None or projected_point.y > max_y:
+        max_y = projected_point.y
+camera.ortho_scale = max([max_x - min_x, max_y - min_y])
+bpy.context.scene.update()
 
 # render and write file
 scene.render.filepath = outfile
 bpy.ops.render.render(write_still=True)
 
 # clean up afterwards (delete the created camera and target)
+# bpy.ops.object.select_pattern(pattern='Sphere*')
+# bpy.ops.object.delete()
 for obj in scene.objects:
     obj.select = obj.type == 'CAMERA' or obj.type == 'EMPTY'
 bpy.ops.object.delete()
